@@ -18,21 +18,27 @@ Choice GetRandomChoice() {
     return static_cast<Choice>(GetRandomValue(0, 2));
 }
 
-std::string DetermineWinner(Choice player, Choice ai) {
+std::string DetermineWinner(Choice player, Choice ai, int &playerScore, int &aiScore) {
     if (player == ai) return "Draw!";
     if ((player == ROCK && ai == SCISSORS) || 
         (player == PAPER && ai == ROCK) || 
-        (player == SCISSORS && ai == PAPER)) return "You win!";
+        (player == SCISSORS && ai == PAPER)) {
+            playerScore++;
+            return "You win!";
+        }
+    aiScore++;
     return "You lose!";
 }
 
 int main() {
-    InitWindow(600, 400, "Rock Paper Scissors");
+    InitWindow(600, 400, "Mind Game RPS");
     SetTargetFPS(60);
 
     Choice playerChoice = NONE;
     Choice aiChoice = NONE;
     std::string result = "";
+    int playerScore = 0;
+    int aiScore = 0;
 
     while (!WindowShouldClose()) {
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
@@ -44,7 +50,7 @@ int main() {
 
             if (playerChoice != NONE) {
                 aiChoice = GetRandomChoice();
-                result = DetermineWinner(playerChoice, aiChoice);
+                result = DetermineWinner(playerChoice, aiChoice, playerScore, aiScore);
             }
         }
 
@@ -68,9 +74,14 @@ int main() {
             DrawText(result.c_str(), 50, 180, 30, DARKGREEN);
         }
 
+        // Show scores
+        DrawText(("Your Score: " + std::to_string(playerScore)).c_str(), 400, 20, 20, BLUE);
+        DrawText(("AI Score: " + std::to_string(aiScore)).c_str(), 400, 50, 20, RED);
+
         EndDrawing();
     }
 
     CloseWindow();
     return 0;
 }
+
