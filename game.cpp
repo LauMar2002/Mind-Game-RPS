@@ -78,12 +78,28 @@ int main() {
 
         DrawText(("Your Score: " + std::to_string(playerScore)).c_str(), 450, 20, 16, BLUE);
         DrawText(("AI Score: " + std::to_string(aiScore)).c_str(), 450, 45, 16, RED);
+
+        // Draw Restart button
+    DrawRectangle(250, 260, 100, 30, DARKGRAY);
+    DrawText("Restart", 270, 267, 16, WHITE);
+
+       // Check Restart click
+       
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+       Vector2 mouse = GetMousePosition();
+       if (CheckCollisionPointRec(mouse, {250, 260, 100, 30})) {
+        playerScore = 0;
+        aiScore = 0;
+        playerChoice = NONE;
+        aiChoice = NONE;
+        result = "";
+    }
+}
+
         EndDrawing();
     }
 
 
-
-    
     CloseWindow();
     return 0;
 }
