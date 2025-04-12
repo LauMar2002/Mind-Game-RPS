@@ -75,12 +75,15 @@ int main() {
         }
 
         // Show scores
-        DrawText(("Your Score: " + std::to_string(playerScore)).c_str(), 400, 20, 20, BLUE);
-        DrawText(("AI Score: " + std::to_string(aiScore)).c_str(), 400, 50, 20, RED);
 
+        DrawText(("Your Score: " + std::to_string(playerScore)).c_str(), 450, 20, 16, BLUE);
+        DrawText(("AI Score: " + std::to_string(aiScore)).c_str(), 450, 45, 16, RED);
         EndDrawing();
     }
 
+
+
+    
     CloseWindow();
     return 0;
 }
