@@ -18,16 +18,21 @@ Choice GetRandomChoice() {
     return static_cast<Choice>(GetRandomValue(0, 2));
 }
 
-std::string DetermineWinner(Choice player, Choice ai, int &playerScore, int &aiScore) {
-    if (player == ai) return "Draw!";
+std::string DetermineWinner(Choice player, Choice ai, int &playerScore, int &aiScore, Sound winSound, Sound loseSound, Sound drawSound){
+    if (player == ai) {
+        PlaySound(drawSound);
+        return "Draw!";
+    }
     if ((player == ROCK && ai == SCISSORS) || 
         (player == PAPER && ai == ROCK) || 
         (player == SCISSORS && ai == PAPER)) {
             playerScore++;
+            PlaySound(winSound);
             return "You win!";
-        }
+    }
     aiScore++;
-    return "You lose!";
+    PlaySound(loseSound);
+    return "You lose!";    
 }
 
 int main() {
@@ -40,6 +45,12 @@ int main() {
     int playerScore = 0;
     int aiScore = 0;
 
+    InitAudioDevice();
+
+Sound winSound = LoadSound("win.wav");
+Sound loseSound = LoadSound("lose.wav");
+Sound drawSound = LoadSound("draw.wav");
+
     while (!WindowShouldClose()) {
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             Vector2 mouse = GetMousePosition();
@@ -50,7 +61,7 @@ int main() {
 
             if (playerChoice != NONE) {
                 aiChoice = GetRandomChoice();
-                result = DetermineWinner(playerChoice, aiChoice, playerScore, aiScore);
+                result = DetermineWinner(playerChoice, aiChoice, playerScore, aiScore, winSound, loseSound, drawSound);
             }
         }
 
@@ -84,15 +95,33 @@ int main() {
     DrawText("Restart", 270, 267, 16, WHITE);
 
        // Check Restart click
-       
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-       Vector2 mouse = GetMousePosition();
-       if (CheckCollisionPointRec(mouse, {250, 260, 100, 30})) {
-        playerScore = 0;
-        aiScore = 0;
-        playerChoice = NONE;
-        aiChoice = NONE;
-        result = "";
+       if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        Vector2 mouse = GetMousePosition();
+    
+        // Check Restart FIRST
+        if (CheckCollisionPointRec(mouse, {250, 260, 100, 30})) {
+            playerScore = 0;
+            aiScore = 0;
+            playerChoice = NONE;
+            aiChoice = NONE;
+            result = "";
+            PlaySound(drawSound);
+        }
+        // Only check choices if NOT clicking restart
+        else if (CheckCollisionPointRec(mouse, {50, 300, 100, 40})) {
+            playerChoice = ROCK;
+        }
+        else if (CheckCollisionPointRec(mouse, {250, 300, 100, 40})) {
+            playerChoice = PAPER;
+        }
+        else if (CheckCollisionPointRec(mouse, {450, 300, 100, 40})) {
+            playerChoice = SCISSORS;
+        }
+    
+        if (playerChoice != NONE) {
+            aiChoice = GetRandomChoice();
+            result = DetermineWinner(playerChoice, aiChoice, playerScore, aiScore, winSound, loseSound, drawSound);
+        }
     }
 }
 
@@ -101,6 +130,11 @@ int main() {
 
 
     CloseWindow();
+    UnloadSound(winSound);
+    UnloadSound(loseSound);
+    UnloadSound(drawSound);
+    CloseAudioDevice();
+
     return 0;
 }
 
