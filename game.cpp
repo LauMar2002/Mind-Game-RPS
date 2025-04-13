@@ -15,7 +15,7 @@ Choice GetSmarterAIChoice(Choice previousPlayerChoice) {
         case ROCK: return PAPER;
         case PAPER: return SCISSORS;
         case SCISSORS: return ROCK;
-        default: return GetRandomChoice(); // First round: random
+        default: return GetRandomChoice();
     }
 }
 
@@ -100,19 +100,29 @@ int main() {
             continue;
         }
 
+        // === HOVER LOGIC ===
+        Vector2 mouse = GetMousePosition();
+        Color rockColor = LIGHTGRAY;
+        Color paperColor = LIGHTGRAY;
+        Color scissorsColor = LIGHTGRAY;
+
+        if (CheckCollisionPointRec(mouse, {50, 300, 100, 40})) rockColor = GRAY;
+        if (CheckCollisionPointRec(mouse, {250, 300, 100, 40})) paperColor = GRAY;
+        if (CheckCollisionPointRec(mouse, {450, 300, 100, 40})) scissorsColor = GRAY;
+
         // === GAME DRAWING ===
         BeginDrawing();
         ClearBackground(backgroundColor);
 
         DrawText("Choose Rock, Paper or Scissors", 100, 20, 20, DARKGRAY);
 
-        DrawRectangle(50, 300, 100, 40, LIGHTGRAY);
+        DrawRectangle(50, 300, 100, 40, rockColor);
         DrawText("Rock", 70, 310, 20, BLACK);
 
-        DrawRectangle(250, 300, 100, 40, LIGHTGRAY);
+        DrawRectangle(250, 300, 100, 40, paperColor);
         DrawText("Paper", 270, 310, 20, BLACK);
 
-        DrawRectangle(450, 300, 100, 40, LIGHTGRAY);
+        DrawRectangle(450, 300, 100, 40, scissorsColor);
         DrawText("Scissors", 460, 310, 20, BLACK);
 
         DrawRectangle(250, 260, 100, 30, DARKGRAY);
@@ -131,8 +141,6 @@ int main() {
 
         // === GAME LOGIC ===
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            Vector2 mouse = GetMousePosition();
-
             if (CheckCollisionPointRec(mouse, {250, 260, 100, 30})) {
                 playerScore = 0;
                 aiScore = 0;
@@ -154,7 +162,7 @@ int main() {
             }
 
             if (playerChoice != NONE) {
-                aiChoice = GetSmarterAIChoice(lastPlayerChoice); // Smarter AI
+                aiChoice = GetSmarterAIChoice(lastPlayerChoice);
                 result = DetermineWinner(playerChoice, aiChoice, playerScore, aiScore, winSound, loseSound, drawSound);
                 lastPlayerChoice = playerChoice;
 
@@ -173,3 +181,4 @@ int main() {
 
     return 0;
 }
+
