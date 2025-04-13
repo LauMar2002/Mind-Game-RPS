@@ -4,9 +4,7 @@
 #include <ctime>
 
 enum Choice { NONE = -1, ROCK, PAPER, SCISSORS };
-
 Color backgroundColor = RAYWHITE;
-Color targetBackgroundColor = RAYWHITE;
 
 Choice GetRandomChoice() {
     return static_cast<Choice>(GetRandomValue(0, 2));
@@ -30,14 +28,12 @@ std::string ChoiceToString(Choice choice) {
     }
 }
 
-std::string DetermineWinner(Choice player, Choice ai, int &playerScore, int &aiScore, Sound winSound, Sound loseSound, Sound drawSound){
+std::string DetermineWinner(Choice player, Choice ai, int &playerScore, int &aiScore, Sound winSound, Sound loseSound, Sound drawSound) {
     if (player == ai) {
         PlaySound(drawSound);
         return "Draw!";
     }
-    if ((player == ROCK && ai == SCISSORS) || 
-        (player == PAPER && ai == ROCK) || 
-        (player == SCISSORS && ai == PAPER)) {
+    if ((player == ROCK && ai == SCISSORS) || (player == PAPER && ai == ROCK) || (player == SCISSORS && ai == PAPER)) {
         playerScore++;
         PlaySound(winSound);
         return "You win!";
@@ -70,7 +66,6 @@ int main() {
     Sound drawSound = LoadSound("draw.wav");
 
     while (!WindowShouldClose()) {
-        // === PLAYER NAME INPUT FIRST ===
         if (!nameEntered) {
             int key = GetCharPressed();
             while (key > 0) {
@@ -81,12 +76,10 @@ int main() {
                 }
                 key = GetCharPressed();
             }
-
             if (IsKeyPressed(KEY_BACKSPACE)) {
                 int len = strlen(nameBuffer);
                 if (len > 0) nameBuffer[len - 1] = '\0';
             }
-
             if (IsKeyPressed(KEY_ENTER) && strlen(nameBuffer) > 0) {
                 playerName = nameBuffer;
                 nameEntered = true;
@@ -102,53 +95,45 @@ int main() {
             continue;
         }
 
-        // === HOVER COLORS ===
-        Vector2 mouse = GetMousePosition();
-        Color rockColor = LIGHTGRAY;
-        Color paperColor = LIGHTGRAY;
-        Color scissorsColor = LIGHTGRAY;
-
-        if (CheckCollisionPointRec(mouse, {50, 300, 100, 40})) rockColor = GRAY;
-        if (CheckCollisionPointRec(mouse, {250, 300, 100, 40})) paperColor = GRAY;
-        if (CheckCollisionPointRec(mouse, {450, 300, 100, 40})) scissorsColor = GRAY;
-
-        // === Animate Background Color ===
-        backgroundColor.r += (targetBackgroundColor.r - backgroundColor.r) / 10;
-        backgroundColor.g += (targetBackgroundColor.g - backgroundColor.g) / 10;
-        backgroundColor.b += (targetBackgroundColor.b - backgroundColor.b) / 10;
-        backgroundColor.a += (targetBackgroundColor.a - backgroundColor.a) / 10;
-
-        // === GAME DRAWING ===
         BeginDrawing();
         ClearBackground(backgroundColor);
 
         DrawText("Choose Rock, Paper or Scissors", 100, 20, 20, DARKGRAY);
 
-        DrawRectangle(50, 300, 100, 40, rockColor);
+        DrawRectangle(50, 300, 100, 40, LIGHTGRAY);
         DrawText("Rock", 70, 310, 20, BLACK);
 
-        DrawRectangle(250, 300, 100, 40, paperColor);
+        DrawRectangle(250, 300, 100, 40, LIGHTGRAY);
         DrawText("Paper", 270, 310, 20, BLACK);
 
-        DrawRectangle(450, 300, 100, 40, scissorsColor);
+        DrawRectangle(450, 300, 100, 40, LIGHTGRAY);
         DrawText("Scissors", 460, 310, 20, BLACK);
 
         DrawRectangle(250, 260, 100, 30, DARKGRAY);
         DrawText("Restart", 270, 267, 16, WHITE);
 
         DrawText((playerName + ": " + std::to_string(playerScore)).c_str(), 450, 20, 16, BLUE);
-        DrawText(("AI Score: " + std::to_string(aiScore)).c_str(), 450, 45, 16, RED);
+        DrawText(("AI Score: " + std::to_string(aiScore)).c_str(), 450, 45, 16, YELLOW); // changed from RED
 
         if (playerChoice != NONE) {
             DrawText(("You: " + ChoiceToString(playerChoice)).c_str(), 50, 100, 20, BLUE);
-            DrawText(("AI: " + ChoiceToString(aiChoice)).c_str(), 50, 130, 20, RED);
-            DrawText(result.c_str(), 50, 180, 30, DARKGREEN);
+            DrawText(("AI: " + ChoiceToString(aiChoice)).c_str(), 50, 130, 20, YELLOW); // yellow for AI pick
+
+            int resultX = 50, resultY = 180, fontSize = 30;
+            DrawText(result.c_str(), resultX + 2, resultY + 2, fontSize, GRAY);  // shadow
+            DrawText(result.c_str(), resultX, resultY, fontSize, WHITE);         // main text
+        }
+
+        // Feature 9: Retro scanlines
+        for (int y = 0; y < 400; y += 4) {
+            DrawLine(0, y, 600, y, Fade(BLACK, 0.1f));
         }
 
         EndDrawing();
 
-        // === GAME LOGIC ===
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            Vector2 mouse = GetMousePosition();
+
             if (CheckCollisionPointRec(mouse, {250, 260, 100, 30})) {
                 playerScore = 0;
                 aiScore = 0;
@@ -156,7 +141,7 @@ int main() {
                 aiChoice = NONE;
                 lastPlayerChoice = NONE;
                 result = "";
-                targetBackgroundColor = RAYWHITE;
+                backgroundColor = RAYWHITE;
                 PlaySound(drawSound);
             }
             else if (CheckCollisionPointRec(mouse, {50, 300, 100, 40})) {
@@ -174,10 +159,9 @@ int main() {
                 result = DetermineWinner(playerChoice, aiChoice, playerScore, aiScore, winSound, loseSound, drawSound);
                 lastPlayerChoice = playerChoice;
 
-                // Update target background color
-                if (result == "You win!") targetBackgroundColor = GREEN;
-                else if (result == "You lose!") targetBackgroundColor = RED;
-                else if (result == "Draw!") targetBackgroundColor = LIGHTGRAY;
+                if (result == "You win!") backgroundColor = GREEN;
+                else if (result == "You lose!") backgroundColor = RED;
+                else if (result == "Draw!") backgroundColor = LIGHTGRAY;
             }
         }
     }
