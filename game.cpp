@@ -6,6 +6,15 @@
 enum Choice { NONE = -1, ROCK, PAPER, SCISSORS };
 Color backgroundColor = RAYWHITE;
 
+Choice GetSmarterAIChoice(Choice lastPlayerChoice) {
+    switch (lastPlayerChoice) {
+        case ROCK: return PAPER;     // Paper beats Rock
+        case PAPER: return SCISSORS; // Scissors beats Paper
+        case SCISSORS: return ROCK;  // Rock beats Scissors
+        default: return GetRandomChoice(); // First round: random
+    }
+}
+
 std::string ChoiceToString(Choice choice) {
     switch (choice) {
         case ROCK: return "Rock";
@@ -42,6 +51,7 @@ int main() {
 
     Choice playerChoice = NONE;
     Choice aiChoice = NONE;
+    Choice lastPlayerChoice = NONE;  // Track last player move for smart AI
     std::string result = "";
     int playerScore = 0;
     int aiScore = 0;
@@ -83,7 +93,7 @@ int main() {
 
         EndDrawing();
 
-        // ✅ Input handling: Check clicks only once
+        // Input handling
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             Vector2 mouse = GetMousePosition();
 
@@ -94,10 +104,10 @@ int main() {
                 playerChoice = NONE;
                 aiChoice = NONE;
                 result = "";
-                backgroundColor = RAYWHITE; // Reset color on restart
+                backgroundColor = RAYWHITE;
+                lastPlayerChoice = NONE; // Reset tracking after restart
                 PlaySound(drawSound);
             }
-            // Otherwise check game choices
             else if (CheckCollisionPointRec(mouse, {50, 300, 100, 40})) {
                 playerChoice = ROCK;
             }
@@ -108,10 +118,11 @@ int main() {
                 playerChoice = SCISSORS;
             }
 
-            // Process result if a valid choice was made
+            // If the player picked something, run the round
             if (playerChoice != NONE) {
-                aiChoice = GetRandomChoice();
+                aiChoice = GetSmarterAIChoice(lastPlayerChoice); // Use last move
                 result = DetermineWinner(playerChoice, aiChoice, playerScore, aiScore, winSound, loseSound, drawSound);
+                lastPlayerChoice = playerChoice; // Update AFTER AI decision
 
                 if (result == "You win!") backgroundColor = GREEN;
                 else if (result == "You lose!") backgroundColor = RED;
@@ -128,5 +139,3 @@ int main() {
 
     return 0;
 }
-
-
