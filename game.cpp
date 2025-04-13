@@ -5,6 +5,7 @@
 
 enum Choice { NONE = -1, ROCK, PAPER, SCISSORS };
 Color backgroundColor = RAYWHITE;
+bool muted = false; // Feature 10: mute toggle
 
 Choice GetRandomChoice() {
     return static_cast<Choice>(GetRandomValue(0, 2));
@@ -28,18 +29,22 @@ std::string ChoiceToString(Choice choice) {
     }
 }
 
+void PlayGameSound(Sound s) {
+    if (!muted) PlaySound(s);
+}
+
 std::string DetermineWinner(Choice player, Choice ai, int &playerScore, int &aiScore, Sound winSound, Sound loseSound, Sound drawSound) {
     if (player == ai) {
-        PlaySound(drawSound);
+        PlayGameSound(drawSound);
         return "Draw!";
     }
     if ((player == ROCK && ai == SCISSORS) || (player == PAPER && ai == ROCK) || (player == SCISSORS && ai == PAPER)) {
         playerScore++;
-        PlaySound(winSound);
+        PlayGameSound(winSound);
         return "You win!";
     }
     aiScore++;
-    PlaySound(loseSound);
+    PlayGameSound(loseSound);
     return "You lose!";
 }
 
@@ -84,7 +89,6 @@ int main() {
                 playerName = nameBuffer;
                 nameEntered = true;
             }
-
             BeginDrawing();
             ClearBackground(RAYWHITE);
             DrawText("Enter your name:", 180, 150, 20, DARKGRAY);
@@ -109,22 +113,28 @@ int main() {
         DrawRectangle(450, 300, 100, 40, LIGHTGRAY);
         DrawText("Scissors", 460, 310, 20, BLACK);
 
+        // Organized Button Row
+        DrawRectangle(100, 260, 100, 30, DARKGRAY);
+        DrawText(muted ? "Unmute" : "Mute", 120, 267, 16, WHITE);
+
         DrawRectangle(250, 260, 100, 30, DARKGRAY);
         DrawText("Restart", 270, 267, 16, WHITE);
 
+        DrawRectangle(400, 260, 100, 30, DARKGRAY);
+        DrawText("Quit", 435, 267, 16, WHITE);
+
         DrawText((playerName + ": " + std::to_string(playerScore)).c_str(), 450, 20, 16, BLUE);
-        DrawText(("AI Score: " + std::to_string(aiScore)).c_str(), 450, 45, 16, YELLOW); // changed from RED
+        DrawText(("AI Score: " + std::to_string(aiScore)).c_str(), 450, 45, 16, YELLOW);
 
         if (playerChoice != NONE) {
             DrawText(("You: " + ChoiceToString(playerChoice)).c_str(), 50, 100, 20, BLUE);
-            DrawText(("AI: " + ChoiceToString(aiChoice)).c_str(), 50, 130, 20, YELLOW); // yellow for AI pick
+            DrawText(("AI: " + ChoiceToString(aiChoice)).c_str(), 50, 130, 20, YELLOW);
 
             int resultX = 50, resultY = 180, fontSize = 30;
-            DrawText(result.c_str(), resultX + 2, resultY + 2, fontSize, GRAY);  // shadow
-            DrawText(result.c_str(), resultX, resultY, fontSize, WHITE);         // main text
+            DrawText(result.c_str(), resultX + 2, resultY + 2, fontSize, GRAY);
+            DrawText(result.c_str(), resultX, resultY, fontSize, WHITE);
         }
 
-        // Feature 9: Retro scanlines
         for (int y = 0; y < 400; y += 4) {
             DrawLine(0, y, 600, y, Fade(BLACK, 0.1f));
         }
@@ -134,6 +144,9 @@ int main() {
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             Vector2 mouse = GetMousePosition();
 
+            if (CheckCollisionPointRec(mouse, {400, 260, 100, 30})) break; // Quit
+            if (CheckCollisionPointRec(mouse, {100, 260, 100, 30})) muted = !muted;
+
             if (CheckCollisionPointRec(mouse, {250, 260, 100, 30})) {
                 playerScore = 0;
                 aiScore = 0;
@@ -142,7 +155,7 @@ int main() {
                 lastPlayerChoice = NONE;
                 result = "";
                 backgroundColor = RAYWHITE;
-                PlaySound(drawSound);
+                PlayGameSound(drawSound);
             }
             else if (CheckCollisionPointRec(mouse, {50, 300, 100, 40})) {
                 playerChoice = ROCK;
@@ -174,4 +187,5 @@ int main() {
 
     return 0;
 }
+
 
