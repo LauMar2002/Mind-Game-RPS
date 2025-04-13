@@ -4,7 +4,9 @@
 #include <ctime>
 
 enum Choice { NONE = -1, ROCK, PAPER, SCISSORS };
+
 Color backgroundColor = RAYWHITE;
+Color targetBackgroundColor = RAYWHITE;
 
 Choice GetRandomChoice() {
     return static_cast<Choice>(GetRandomValue(0, 2));
@@ -100,7 +102,7 @@ int main() {
             continue;
         }
 
-        // === HOVER LOGIC ===
+        // === HOVER COLORS ===
         Vector2 mouse = GetMousePosition();
         Color rockColor = LIGHTGRAY;
         Color paperColor = LIGHTGRAY;
@@ -109,6 +111,12 @@ int main() {
         if (CheckCollisionPointRec(mouse, {50, 300, 100, 40})) rockColor = GRAY;
         if (CheckCollisionPointRec(mouse, {250, 300, 100, 40})) paperColor = GRAY;
         if (CheckCollisionPointRec(mouse, {450, 300, 100, 40})) scissorsColor = GRAY;
+
+        // === Animate Background Color ===
+        backgroundColor.r += (targetBackgroundColor.r - backgroundColor.r) / 10;
+        backgroundColor.g += (targetBackgroundColor.g - backgroundColor.g) / 10;
+        backgroundColor.b += (targetBackgroundColor.b - backgroundColor.b) / 10;
+        backgroundColor.a += (targetBackgroundColor.a - backgroundColor.a) / 10;
 
         // === GAME DRAWING ===
         BeginDrawing();
@@ -148,7 +156,7 @@ int main() {
                 aiChoice = NONE;
                 lastPlayerChoice = NONE;
                 result = "";
-                backgroundColor = RAYWHITE;
+                targetBackgroundColor = RAYWHITE;
                 PlaySound(drawSound);
             }
             else if (CheckCollisionPointRec(mouse, {50, 300, 100, 40})) {
@@ -166,9 +174,10 @@ int main() {
                 result = DetermineWinner(playerChoice, aiChoice, playerScore, aiScore, winSound, loseSound, drawSound);
                 lastPlayerChoice = playerChoice;
 
-                if (result == "You win!") backgroundColor = GREEN;
-                else if (result == "You lose!") backgroundColor = RED;
-                else if (result == "Draw!") backgroundColor = LIGHTGRAY;
+                // Update target background color
+                if (result == "You win!") targetBackgroundColor = GREEN;
+                else if (result == "You lose!") targetBackgroundColor = RED;
+                else if (result == "Draw!") targetBackgroundColor = LIGHTGRAY;
             }
         }
     }
