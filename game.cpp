@@ -4,6 +4,7 @@
 #include <ctime>
 
 enum Choice { NONE = -1, ROCK, PAPER, SCISSORS };
+Color backgroundColor = RAYWHITE;
 
 std::string ChoiceToString(Choice choice) {
     switch (choice) {
@@ -47,26 +48,13 @@ int main() {
 
     InitAudioDevice();
 
-Sound winSound = LoadSound("win.wav");
-Sound loseSound = LoadSound("lose.wav");
-Sound drawSound = LoadSound("draw.wav");
+    Sound winSound = LoadSound("win.wav");
+    Sound loseSound = LoadSound("lose.wav");
+    Sound drawSound = LoadSound("draw.wav");
 
     while (!WindowShouldClose()) {
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            Vector2 mouse = GetMousePosition();
-
-            if (CheckCollisionPointRec(mouse, {50, 300, 100, 40})) playerChoice = ROCK;
-            else if (CheckCollisionPointRec(mouse, {250, 300, 100, 40})) playerChoice = PAPER;
-            else if (CheckCollisionPointRec(mouse, {450, 300, 100, 40})) playerChoice = SCISSORS;
-
-            if (playerChoice != NONE) {
-                aiChoice = GetRandomChoice();
-                result = DetermineWinner(playerChoice, aiChoice, playerScore, aiScore, winSound, loseSound, drawSound);
-            }
-        }
-
         BeginDrawing();
-        ClearBackground(RAYWHITE);
+        ClearBackground(backgroundColor);
 
         DrawText("Choose Rock, Paper or Scissors", 100, 20, 20, DARKGRAY);
 
@@ -79,62 +67,66 @@ Sound drawSound = LoadSound("draw.wav");
         DrawRectangle(450, 300, 100, 40, LIGHTGRAY);
         DrawText("Scissors", 460, 310, 20, BLACK);
 
+        // Draw Restart button
+        DrawRectangle(250, 260, 100, 30, DARKGRAY);
+        DrawText("Restart", 270, 267, 16, WHITE);
+
+        // Show scores
+        DrawText(("Your Score: " + std::to_string(playerScore)).c_str(), 450, 20, 16, BLUE);
+        DrawText(("AI Score: " + std::to_string(aiScore)).c_str(), 450, 45, 16, RED);
+
         if (playerChoice != NONE) {
             DrawText(("You: " + ChoiceToString(playerChoice)).c_str(), 50, 100, 20, BLUE);
             DrawText(("AI: " + ChoiceToString(aiChoice)).c_str(), 50, 130, 20, RED);
             DrawText(result.c_str(), 50, 180, 30, DARKGREEN);
         }
 
-        // Show scores
-
-        DrawText(("Your Score: " + std::to_string(playerScore)).c_str(), 450, 20, 16, BLUE);
-        DrawText(("AI Score: " + std::to_string(aiScore)).c_str(), 450, 45, 16, RED);
-
-        // Draw Restart button
-    DrawRectangle(250, 260, 100, 30, DARKGRAY);
-    DrawText("Restart", 270, 267, 16, WHITE);
-
-       // Check Restart click
-       if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        Vector2 mouse = GetMousePosition();
-    
-        // Check Restart FIRST
-        if (CheckCollisionPointRec(mouse, {250, 260, 100, 30})) {
-            playerScore = 0;
-            aiScore = 0;
-            playerChoice = NONE;
-            aiChoice = NONE;
-            result = "";
-            PlaySound(drawSound);
-        }
-        // Only check choices if NOT clicking restart
-        else if (CheckCollisionPointRec(mouse, {50, 300, 100, 40})) {
-            playerChoice = ROCK;
-        }
-        else if (CheckCollisionPointRec(mouse, {250, 300, 100, 40})) {
-            playerChoice = PAPER;
-        }
-        else if (CheckCollisionPointRec(mouse, {450, 300, 100, 40})) {
-            playerChoice = SCISSORS;
-        }
-    
-        if (playerChoice != NONE) {
-            aiChoice = GetRandomChoice();
-            result = DetermineWinner(playerChoice, aiChoice, playerScore, aiScore, winSound, loseSound, drawSound);
-        }
-    }
-}
-
         EndDrawing();
+
+        // ✅ Input handling: Check clicks only once
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            Vector2 mouse = GetMousePosition();
+
+            // Check Restart FIRST
+            if (CheckCollisionPointRec(mouse, {250, 260, 100, 30})) {
+                playerScore = 0;
+                aiScore = 0;
+                playerChoice = NONE;
+                aiChoice = NONE;
+                result = "";
+                backgroundColor = RAYWHITE; // Reset color on restart
+                PlaySound(drawSound);
+            }
+            // Otherwise check game choices
+            else if (CheckCollisionPointRec(mouse, {50, 300, 100, 40})) {
+                playerChoice = ROCK;
+            }
+            else if (CheckCollisionPointRec(mouse, {250, 300, 100, 40})) {
+                playerChoice = PAPER;
+            }
+            else if (CheckCollisionPointRec(mouse, {450, 300, 100, 40})) {
+                playerChoice = SCISSORS;
+            }
+
+            // Process result if a valid choice was made
+            if (playerChoice != NONE) {
+                aiChoice = GetRandomChoice();
+                result = DetermineWinner(playerChoice, aiChoice, playerScore, aiScore, winSound, loseSound, drawSound);
+
+                if (result == "You win!") backgroundColor = GREEN;
+                else if (result == "You lose!") backgroundColor = RED;
+                else if (result == "Draw!") backgroundColor = LIGHTGRAY;
+            }
+        }
     }
 
-
-    CloseWindow();
     UnloadSound(winSound);
     UnloadSound(loseSound);
     UnloadSound(drawSound);
     CloseAudioDevice();
+    CloseWindow();
 
     return 0;
 }
+
 
