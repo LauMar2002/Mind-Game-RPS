@@ -5,7 +5,7 @@
 
 enum Choice { NONE = -1, ROCK, PAPER, SCISSORS };
 Color backgroundColor = RAYWHITE;
-bool muted = false; // Feature 10: mute toggle
+bool muted = false;
 
 Choice GetRandomChoice() {
     return static_cast<Choice>(GetRandomValue(0, 2));
@@ -99,28 +99,36 @@ int main() {
             continue;
         }
 
+        // Define button rectangles
+        Rectangle rockBtn = {50, 300, 100, 40};
+        Rectangle paperBtn = {250, 300, 100, 40};
+        Rectangle scissorsBtn = {450, 300, 100, 40};
+
+        Rectangle muteBtn = {100, 260, 100, 30};
+        Rectangle restartBtn = {250, 260, 100, 30};
+        Rectangle quitBtn = {400, 260, 100, 30};
+
         BeginDrawing();
         ClearBackground(backgroundColor);
 
         DrawText("Choose Rock, Paper or Scissors", 100, 20, 20, DARKGRAY);
 
-        DrawRectangle(50, 300, 100, 40, LIGHTGRAY);
+        DrawRectangleRec(rockBtn, CheckCollisionPointRec(GetMousePosition(), rockBtn) ? SKYBLUE : LIGHTGRAY);
         DrawText("Rock", 70, 310, 20, BLACK);
 
-        DrawRectangle(250, 300, 100, 40, LIGHTGRAY);
+        DrawRectangleRec(paperBtn, CheckCollisionPointRec(GetMousePosition(), paperBtn) ? SKYBLUE : LIGHTGRAY);
         DrawText("Paper", 270, 310, 20, BLACK);
 
-        DrawRectangle(450, 300, 100, 40, LIGHTGRAY);
+        DrawRectangleRec(scissorsBtn, CheckCollisionPointRec(GetMousePosition(), scissorsBtn) ? SKYBLUE : LIGHTGRAY);
         DrawText("Scissors", 460, 310, 20, BLACK);
 
-        // Organized Button Row
-        DrawRectangle(100, 260, 100, 30, DARKGRAY);
+        DrawRectangleRec(muteBtn, CheckCollisionPointRec(GetMousePosition(), muteBtn) ? GRAY : DARKGRAY);
         DrawText(muted ? "Unmute" : "Mute", 120, 267, 16, WHITE);
 
-        DrawRectangle(250, 260, 100, 30, DARKGRAY);
+        DrawRectangleRec(restartBtn, CheckCollisionPointRec(GetMousePosition(), restartBtn) ? GRAY : DARKGRAY);
         DrawText("Restart", 270, 267, 16, WHITE);
 
-        DrawRectangle(400, 260, 100, 30, DARKGRAY);
+        DrawRectangleRec(quitBtn, CheckCollisionPointRec(GetMousePosition(), quitBtn) ? GRAY : DARKGRAY);
         DrawText("Quit", 435, 267, 16, WHITE);
 
         DrawText((playerName + ": " + std::to_string(playerScore)).c_str(), 450, 20, 16, BLUE);
@@ -129,25 +137,25 @@ int main() {
         if (playerChoice != NONE) {
             DrawText(("You: " + ChoiceToString(playerChoice)).c_str(), 50, 100, 20, BLUE);
             DrawText(("AI: " + ChoiceToString(aiChoice)).c_str(), 50, 130, 20, YELLOW);
-
-            int resultX = 50, resultY = 180, fontSize = 30;
-            DrawText(result.c_str(), resultX + 2, resultY + 2, fontSize, GRAY);
-            DrawText(result.c_str(), resultX, resultY, fontSize, WHITE);
+            DrawText(result.c_str(), 52, 182, 30, GRAY); // Shadow effect
+            DrawText(result.c_str(), 50, 180, 30, WHITE);
         }
 
+        // Retro scanlines
         for (int y = 0; y < 400; y += 4) {
             DrawLine(0, y, 600, y, Fade(BLACK, 0.1f));
         }
 
         EndDrawing();
 
+        // Game logic
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             Vector2 mouse = GetMousePosition();
 
-            if (CheckCollisionPointRec(mouse, {400, 260, 100, 30})) break; // Quit
-            if (CheckCollisionPointRec(mouse, {100, 260, 100, 30})) muted = !muted;
+            if (CheckCollisionPointRec(mouse, quitBtn)) break;
+            if (CheckCollisionPointRec(mouse, muteBtn)) muted = !muted;
 
-            if (CheckCollisionPointRec(mouse, {250, 260, 100, 30})) {
+            if (CheckCollisionPointRec(mouse, restartBtn)) {
                 playerScore = 0;
                 aiScore = 0;
                 playerChoice = NONE;
@@ -156,14 +164,11 @@ int main() {
                 result = "";
                 backgroundColor = RAYWHITE;
                 PlayGameSound(drawSound);
-            }
-            else if (CheckCollisionPointRec(mouse, {50, 300, 100, 40})) {
+            } else if (CheckCollisionPointRec(mouse, rockBtn)) {
                 playerChoice = ROCK;
-            }
-            else if (CheckCollisionPointRec(mouse, {250, 300, 100, 40})) {
+            } else if (CheckCollisionPointRec(mouse, paperBtn)) {
                 playerChoice = PAPER;
-            }
-            else if (CheckCollisionPointRec(mouse, {450, 300, 100, 40})) {
+            } else if (CheckCollisionPointRec(mouse, scissorsBtn)) {
                 playerChoice = SCISSORS;
             }
 
@@ -174,7 +179,7 @@ int main() {
 
                 if (result == "You win!") backgroundColor = GREEN;
                 else if (result == "You lose!") backgroundColor = RED;
-                else if (result == "Draw!") backgroundColor = LIGHTGRAY;
+                else backgroundColor = LIGHTGRAY;
             }
         }
     }
@@ -187,5 +192,8 @@ int main() {
 
     return 0;
 }
+
+
+
 
 
